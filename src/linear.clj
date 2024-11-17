@@ -1,30 +1,30 @@
 (ns linear)
 
-(defn $& [op]
+(defn basic_operation [op]
     (fn [& args]
         (apply mapv op args)))
 
-(def v+ ($& +))
-(def v- ($& -))
-(def v* ($& *))
-(def vd ($& /))
+(def v+ (basic_operation +))
+(def v- (basic_operation -))
+(def v* (basic_operation *))
+(def vd (basic_operation /))
 
-(def m+ ($& v+))
-(def m- ($& v-))
-(def m* ($& v*))
-(def md ($& vd))
+(def m+ (basic_operation v+))
+(def m- (basic_operation v-))
+(def m* (basic_operation v*))
+(def md (basic_operation vd))
 
 (defn dot [& vectors]
-    (if (== (count vectors) 0)
+    (if (empty? vectors)
         0
-        (reduce + (apply v* vectors))))
+        (apply + (apply v* vectors))))
 
-(defn $*s [op]
+(defn type*s [op]
     (fn [arg & scalars]
-        (mapv #(op % (reduce * scalars)) arg)))
+        (mapv #(op % (apply * scalars)) arg)))
 
-(def v*s ($*s *))
-(def m*s ($*s v*s))
+(def v*s (type*s *))
+(def m*s (type*s v*s))
 
 (defn transpose [matrix]
     (apply mapv vector matrix))
@@ -33,8 +33,8 @@
     (mapv #(dot % vector) matrix))
 
 (defn m*m_reducing_function [matrix1 given_matrix2]
-    (def matrix2 (transpose (vec (map vec given_matrix2))))
-    (mapv #(m*v matrix2 %) matrix1))
+    (let [matrix2 (transpose (mapv vec given_matrix2))]
+    (mapv (partial m*v matrix2) matrix1)))
 
 (defn m*m [& matrices]
     (reduce m*m_reducing_function matrices))
